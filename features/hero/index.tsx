@@ -3,7 +3,10 @@ import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { SplitText } from "gsap/SplitText";
-import PageMaxWidth from "@/components/page-max-width";
+
+interface HeroProps {
+  start: boolean;
+}
 
 // ─── Custom cursor ───────────────────────────────────────────────────────────
 const CustomCursor = () => {
@@ -83,7 +86,7 @@ const CustomCursor = () => {
 };
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
-const Hero = () => {
+const Hero = ({ start }: HeroProps) => {
   const container = useRef<HTMLElement>(null);
   const scrollLineRef = useRef<HTMLDivElement>(null);
   const noiseRef = useRef<HTMLDivElement>(null);
@@ -91,6 +94,8 @@ const Hero = () => {
   useGSAP(
     () => {
       gsap.registerPlugin(SplitText);
+
+      if (!start) return; // DON'T RUN YET
 
       const splits = gsap.utils
         .toArray<HTMLElement>(".hero-word")
@@ -193,7 +198,7 @@ const Hero = () => {
       window.addEventListener("mousemove", onParallax);
       return () => window.removeEventListener("mousemove", onParallax);
     },
-    { scope: container }
+    { scope: container, dependencies: [start] }
   );
 
   return (
@@ -213,7 +218,9 @@ const Hero = () => {
       */}
       <section
         ref={container}
-        className="relative w-full h-screen flex flex-col overflow-hidden bg-[#f5f3ef] cursor-none"
+        className={`relative w-full pt-25 h-screen flex flex-col overflow-hidden bg-[#f5f3ef] cursor-none transition-transform duration-1000 ease-out ${
+          start ? "scale-100 opacity-100" : "scale-110 opacity-0"
+        }`}
       >
         {/* Grain */}
         <div
@@ -235,7 +242,7 @@ const Hero = () => {
             <p className="hud-top text-[9px] uppercase tracking-[0.38em] font-bold text-black/35">
               Creative Frontend Eng.
             </p>
-            <p className="hud-top text-[9px] uppercase tracking-[0.3em] font-bold text-[var(--primary)]/60">
+            <p className="hud-top text-[9px] uppercase tracking-[0.3em]  font-bold text-[var(--primary)]/60">
               Available for work
             </p>
           </div>
@@ -269,7 +276,7 @@ const Hero = () => {
                 </h1>
               </div>
               <span className="hero-index self-start text-[8px] font-bold uppercase tracking-[0.3em] text-black/22 hidden lg:block shrink-0 mt-1">
-                2024
+                {new Date().getFullYear()}
               </span>
             </div>
 

@@ -59,3 +59,24 @@ export const satoshi = localFont({
   ],
   variable: "--font-satoshi",
 });
+
+export const clashDisplay = localFont({
+  src: [
+    {
+      path: "./fonts/ClashDisplay-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ClashDisplay-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ClashDisplay-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-clashDisplay",
+});

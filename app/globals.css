@@ -46,6 +46,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --font-clashDisplay:var(--font-clashDisplay)
 }
 
 :root {
@@ -55,6 +56,7 @@
   
   --card: #F1F1F1;
   --card-foreground: #1A1A1A;
+  /* --font-clashDisplay: var(--font-clashDisplay); */
   
   --popover: #F1F1F1;
   --popover-foreground: #1A1A1A;
@@ -180,4 +182,18 @@ html.lenis {
 
 .resume-btn:hover {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+
+@keyframes slideHint {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Prevent horizontal "jumping" during entrance animations */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
 }

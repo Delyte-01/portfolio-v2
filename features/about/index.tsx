@@ -309,6 +309,7 @@ const About = () => {
       <section
         ref={container}
         className="relative min-h-screen bg-[#080808] overflow-hidden"
+        data-theme="dark" // Add this attribute
       >
         {/* Grain */}
         <div
@@ -328,18 +329,18 @@ const About = () => {
           style={{ clipPath: "circle(0% at 15% 85%)", willChange: "clip-path" }}
         >
           {/* Bg image */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* <div className="absolute inset-0 z-0 overflow-hidden">
             <img
               ref={imageRef}
               src="https://res.cloudinary.com/dk5mfu099/image/upload/v1777145352/680754071_980627184707260_1530088102711139995_n_u7yoxt.jpg"
-              alt="David"
+              alt="samuel"
               className="w-full h-full object-cover object-top opacity-[0.6] grayscale brightness-50 scale-[1.12]"
               loading="lazy"
               style={{ willChange: "transform" }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/50 via-transparent to-[#0a0a0a]/80" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-[#0a0a0a]/70" />
-          </div>
+          </div> */}
 
           <PageMaxWidth>
             <div className="relative z-10 about-content min-h-screen flex flex-col justify-center px-4 md:px-0 py-20 lg:py-0 gap-8 md:gap-10">
@@ -354,14 +355,14 @@ const About = () => {
                   style={{ transformOrigin: "left center" }}
                 />
                 <span className="label-item text-zinc-600 font-bold tracking-[0.35em] text-[8px] uppercase">
-                  01 / 03
+                  02 / 03
                 </span>
               </div>
 
               {/* ── Heading ───────────────────────────────────────────────── */}
               <h2
-                className="font-syne font-black uppercase leading-[0.85] tracking-tight"
-                style={{ fontSize: "clamp(2.6rem,8.5vw,7rem)" }}
+                className="font-syne font-black text-[var(--primary)] uppercase leading-[0.85] tracking-tight "
+                style={{ fontSize: "clamp(1.7rem,6.6vw,7rem)" }}
               >
                 {/* overflow:clip clips chars without affecting layout */}
                 <span
@@ -396,13 +397,16 @@ const About = () => {
                     </em>
                     .
                   </p>
+               
                 </div>
 
                 <div className="md:col-span-6 bio-item border-l border-white/8 pl-6 md:pl-10">
-                  <p className="text-sm text-zinc-500 leading-relaxed">
-                    Specializing in React, TypeScript, and GSAP. Motion
-                    isn&apos;t decoration — it&apos;s a language that guides
-                    users through a digital journey with intention.
+                  <p className="text-[17px] text-zinc-400 leading-relaxed">
+                    When I&apos;m not coding, you&apos;ll find me exploring new
+                    technologies, contributing to open source projects, or
+                    mentoring fellow developers. I believe in writing clean,
+                    maintainable code and staying up-to-date with the latest
+                    industry trends.
                   </p>
                 </div>
               </div>

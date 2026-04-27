@@ -1,0 +1,590 @@
+"use client";
+import { useRef, useEffect } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+// ─────────────────────────────────────────────
+//  Types
+// ─────────────────────────────────────────────
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  decay: number;
+  size: number;
+  blue: boolean;
+}
+
+interface SpawnParticlesFn {
+  (count: number): void;
+}
+
+declare global {
+  interface Window {
+    __spawnParticles?: SpawnParticlesFn;
+  }
+}
+
+interface PreloaderProps {
+  onComplete: () => void;
+}
+
+// ─────────────────────────────────────────────
+//  Particle canvas hook
+// ─────────────────────────────────────────────
+function useParticleCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement | null >,
+  active: React.MutableRefObject<boolean>
+): void {
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = (): void => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    let particles: Particle[] = [];
+    let raf: number;
+
+    window.__spawnParticles = (count: number): void => {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 4;
+        particles.push({
+          x: cx + (Math.random() - 0.5) * 280,
+          y: cy + (Math.random() - 0.5) * 90,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.5,
+          life: 1,
+          decay: 0.006 + Math.random() * 0.012,
+          size: 0.4 + Math.random() * 2.2,
+          blue: Math.random() > 0.45,
+        });
+      }
+    };
+
+    const draw = (): void => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter((p) => p.life > 0);
+      for (const p of particles) {
+        ctx.globalAlpha = p.life * 0.72;
+        ctx.fillStyle = p.blue
+          ? `rgba(0,102,255,${p.life})`
+          : `rgba(255,255,255,${p.life * 0.45})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.038;
+        p.vx *= 0.995;
+        p.life -= p.decay;
+      }
+      ctx.globalAlpha = 1;
+      if (active.current) raf = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return (): void => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(raf);
+      delete window.__spawnParticles;
+    };
+  }, [canvasRef, active]);
+}
+
+// ─────────────────────────────────────────────
+//  Helper
+// ─────────────────────────────────────────────
+const spawn = (n: number): void => window.__spawnParticles?.(n);
+
+// ─────────────────────────────────────────────
+//  Component
+// ─────────────────────────────────────────────
+const Preloader = ({ onComplete }: PreloaderProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesActive = useRef<boolean>(true);
+  const fillRef = useRef<HTMLDivElement>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
+  const statusRef = useRef<HTMLSpanElement>(null);
+
+  useParticleCanvas(canvasRef, particlesActive);
+
+  // ── Loading counter ──────────────────────────
+  useEffect(() => {
+    const statuses = ["LOADING ASSETS", "BUILDING UI", "OPTIMISING", "READY"];
+    let progress = 0;
+    const iv = setInterval(() => {
+      progress = Math.min(progress + Math.random() * 2.0 + 0.35, 100);
+      if (fillRef.current) fillRef.current.style.width = `${progress}%`;
+      if (counterRef.current)
+        counterRef.current.textContent = String(Math.floor(progress)).padStart(
+          3,
+          "0"
+        );
+      if (statusRef.current) {
+        if (progress < 25) statusRef.current.textContent = statuses[0];
+        else if (progress < 60) statusRef.current.textContent = statuses[1];
+        else if (progress < 85) statusRef.current.textContent = statuses[2];
+        else statusRef.current.textContent = statuses[3];
+      }
+      if (progress >= 100) clearInterval(iv);
+    }, 52);
+    return () => clearInterval(iv);
+  }, []);
+
+  // ── Master GSAP timeline ─────────────────────
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({ onComplete: () => onComplete() });
+
+      // ── Initial states ──────────────────────
+      // Environment
+      gsap.set(".scanlines", { opacity: 0 });
+      gsap.set(".corner-bracket", { opacity: 0, scale: 0.75 });
+      gsap.set(".center-cross", { opacity: 0, scale: 0 });
+      gsap.set(".hud-bar", { opacity: 0, y: 10 });
+      gsap.set(".blueprint-grid", { opacity: 0 });
+      gsap.set(".flare", { opacity: 0, scale: 0.5 });
+      gsap.set(".impact-flash", { opacity: 0 });
+      gsap.set(".dt-final", { opacity: 0, scale: 1 });
+
+      // Mask-based word reveals — clips start fully closed
+      // DELYTE slides in from the LEFT, hidden behind left clip
+      gsap.set(".word-left-wrap", {
+        x: "-8vw",
+        opacity: 1,
+        clipPath: "inset(0 100% 0 0)", // right edge closed = nothing visible
+      });
+      // TECH slides in from the RIGHT, hidden behind right clip
+      gsap.set(".word-right-wrap", {
+        x: "8vw",
+        opacity: 1,
+        clipPath: "inset(0 0 0 100%)", // left edge closed = nothing visible
+      });
+
+      gsap.set(".tagline-text", {
+        opacity: 0,
+        y: 14,
+        clipPath: "inset(0 0 100% 0)",
+      });
+      gsap.set(".tagline-line", { scaleX: 0, transformOrigin: "left center" });
+
+      // ── Phase 1: Environment ─────────────────
+      tl.to(".blueprint-grid", {
+        opacity: 1,
+        duration: 0.7,
+        ease: "power2.out",
+      })
+        .to(
+          ".scanlines",
+          { opacity: 1, duration: 0.5, ease: "power2.out" },
+          "-=0.45"
+        )
+        .to(
+          ".corner-bracket",
+          {
+            opacity: 1,
+            scale: 1,
+            stagger: 0.09,
+            duration: 0.4,
+            ease: "back.out(2.2)",
+          },
+          "-=0.35"
+        )
+        .to(
+          ".center-cross",
+          { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(3)" },
+          "-=0.15"
+        )
+        .to(
+          ".hud-bar",
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.06,
+            duration: 0.45,
+            ease: "power3.out",
+          },
+          "-=0.15"
+        )
+
+        // ── Phase 2: Cinematic word reveal ───────
+        // DELYTE sweeps in from the left — mask opens left→right, body slides right
+        .to(
+          ".word-left-wrap",
+          {
+            x: 0,
+            clipPath: "inset(0 0% 0 0)", // open fully
+            duration: 1.35,
+            ease: "expo.out",
+            onStart: () => spawn(10),
+          },
+          "+=0.1"
+        )
+        // TECH sweeps in from the right — mask opens right→left, body slides left
+        .to(
+          ".word-right-wrap",
+          {
+            x: 0,
+            clipPath: "inset(0 0 0 0%)", // open fully
+            duration: 1.35,
+            ease: "expo.out",
+            onStart: () => spawn(10),
+          },
+          "<0.08" // tiny stagger so they feel choreographed, not robotically synced
+        )
+
+        // ── Phase 3: Flare & tagline ─────────────
+        .to(
+          ".flare",
+          { opacity: 1, scale: 1, duration: 1.8, ease: "power2.out" },
+          "-=0.9"
+        )
+        .to(
+          ".tagline-line",
+          { scaleX: 1, duration: 0.8, ease: "expo.out" },
+          "-=0.7"
+        )
+        .to(
+          ".tagline-text",
+          {
+            opacity: 1,
+            y: 0,
+            clipPath: "inset(0 0 0% 0)",
+            duration: 0.9,
+            ease: "power3.out",
+          },
+          "-=0.55"
+        )
+
+        // Subtle breathe
+        .to(
+          ".dt-logo-group",
+          { scale: 1.035, duration: 2.0, ease: "sine.inOut" },
+          "-=0.3"
+        )
+        .to(".dt-logo-group", { scale: 1, duration: 1.4, ease: "sine.inOut" })
+
+        // ── Phase 4: Extra chars shatter ─────────
+        .to(
+          ".extra-char",
+          {
+            opacity: 0,
+            scale: 0.15,
+            filter: "blur(12px)",
+            x: (i: number) => (i % 2 === 0 ? -140 : 140),
+            y: (i: number) => (i % 3 === 0 ? -50 : 24),
+            stagger: 0.025,
+            duration: 0.6,
+            ease: "expo.in",
+            onStart: () => {
+              spawn(55);
+              gsap.to(containerRef.current, {
+                x: 4,
+                y: -4,
+                repeat: 8,
+                yoyo: true,
+                duration: 0.04,
+                ease: "none",
+              });
+            },
+          },
+          "-=0.2"
+        )
+
+        // ── Phase 5: D + H slam together ─────────
+        // Now use translation (the clip mask already covers extras, only D and H remain visible)
+        .to(
+          ".word-left-wrap",
+          {
+            x: "20%",
+            duration: 0.55,
+            ease: "back.inOut(2.8)",
+            onStart: () => spawn(35),
+          },
+          "-=0.45"
+        )
+        .to(
+          ".word-right-wrap",
+          {
+            x: "-20%",
+            duration: 0.55,
+            ease: "back.inOut(2.8)",
+          },
+          "<"
+        )
+
+        // Impact flash
+        .to(".impact-flash", {
+          opacity: 0.2,
+          duration: 0.07,
+          ease: "none",
+          onComplete: () => spawn(90),
+        })
+        .to(".impact-flash", { opacity: 0, duration: 0.3, ease: "power3.out" })
+
+        // ── Phase 6: DT zoom void ─────────────────
+        .to(".dt-final", { opacity: 1, duration: 0.01 })
+        .to(".dt-logo-group", { opacity: 0, duration: 0.12 })
+        .to(".tagline-text", { opacity: 0, duration: 0.2 }, "<")
+        .to(".tagline-line", { scaleX: 0, opacity: 0, duration: 0.2 }, "<")
+        .to(".flare", { scale: 2.5, opacity: 0, duration: 0.45 }, "<")
+        .to(".dt-final", {
+          scale: 240,
+          opacity: 0,
+          duration: 1.5,
+          ease: "power4.in",
+          onStart: () => {
+            particlesActive.current = false;
+            spawn(130);
+          },
+        })
+
+        // ── Phase 7: UI fade out ──────────────────
+        .to(".hud-bar", { opacity: 0, duration: 0.35 }, "-=1.1")
+        .to(".corner-bracket", { opacity: 0, duration: 0.35 }, "-=1.1")
+        .to(".center-cross", { opacity: 0, duration: 0.25 }, "-=1.05")
+        .to(".scanlines", { opacity: 0, duration: 0.3 }, "-=1.05")
+        .to(
+          containerRef.current,
+          { opacity: 0, duration: 0.55, ease: "power2.out" },
+          "-=0.65"
+        );
+    },
+    { scope: containerRef }
+  );
+
+  return (
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505] overflow-hidden select-none"
+    >
+      {/* ── Film grain ── */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1] opacity-[0.042] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          animation: "grain 0.11s steps(1) infinite",
+        }}
+      />
+
+      {/* ── Scanlines ── */}
+      <div
+        className="scanlines absolute inset-0 pointer-events-none z-[2]"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.065) 2px,rgba(0,0,0,0.065) 4px)",
+        }}
+      />
+
+      {/* ── Letterbox bars ── */}
+      <div className="absolute top-0 left-0 right-0 h-[52px] bg-black z-[3]" />
+      <div className="absolute bottom-0 left-0 right-0 h-[52px] bg-black z-[3]" />
+
+      {/* ── Blueprint grid ── */}
+      <svg
+        className="blueprint-grid absolute inset-0 w-full h-full pointer-events-none z-[0]"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="smallGrid"
+            width="40"
+            height="40"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M40 0L0 0 0 40"
+              fill="none"
+              stroke="rgba(0,102,255,0.045)"
+              strokeWidth="0.5"
+            />
+          </pattern>
+          <pattern
+            id="bigGrid"
+            width="200"
+            height="200"
+            patternUnits="userSpaceOnUse"
+          >
+            <rect width="200" height="200" fill="url(#smallGrid)" />
+            <path
+              d="M200 0L0 0 0 200"
+              fill="none"
+              stroke="rgba(0,102,255,0.09)"
+              strokeWidth="0.5"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bigGrid)" />
+      </svg>
+
+      {/* ── Corner brackets ── */}
+      {(
+        [
+          "top-[58px] left-[24px] border-t border-l",
+          "top-[58px] right-[24px] border-t border-r",
+          "bottom-[58px] left-[24px] border-b border-l",
+          "bottom-[58px] right-[24px] border-b border-r",
+        ] as const
+      ).map((cls, i) => (
+        <div
+          key={i}
+          className={`corner-bracket absolute w-6 h-6 z-[10] border-[#0066FF]/40 ${cls}`}
+        />
+      ))}
+
+      {/* ── Crosshair ── */}
+      <div
+        className="center-cross absolute z-[5] pointer-events-none"
+        aria-hidden="true"
+      >
+        <div className="w-5 h-px bg-[#0066FF]/28" />
+        <div className="w-px h-5 bg-[#0066FF]/28 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      </div>
+
+      {/* ── Ambient flare ── */}
+      <div
+        className="flare absolute w-[60vw] h-[20vw] rounded-full pointer-events-none z-[4]"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(0,102,255,0.09) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Impact flash ── */}
+      <div
+        className="impact-flash absolute inset-0 bg-white opacity-0 z-[8] pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* ── Main logo ── */}
+      <div className="dt-logo-group relative z-[5] flex flex-col items-center">
+        {/*
+          Each word is wrapped in an overflow-hidden mask container.
+          The clip-path + x-translate animate together for the cinematic reveal.
+        */}
+        <div className="flex font-syne font-black text-[10vw] leading-none tracking-[-0.06em] uppercase ">
+          {/* DELYTE — slides from left, mask opens left→right */}
+          <div
+            className="word-left-wrap overflow-hidden"
+            style={{ willChange: "clip-path, transform" }}
+          >
+            <div className="word-left flex text-white">
+              <span className="char inline-block">D</span>
+              <span className="char extra-char inline-block">E</span>
+              <span className="char extra-char inline-block">L</span>
+              <span className="char extra-char inline-block">Y</span>
+              <span className="char extra-char inline-block">T</span>
+              <span className="char extra-char inline-block">E</span>
+            </div>
+          </div>
+          
+
+          {/* TECH — slides from right, mask opens right→left */}
+          <div
+            className="word-right-wrap overflow-hidden ml-[-0.04em]"
+            style={{ willChange: "clip-path, transform" }}
+          >
+            <div className="word-right flex text-[#0066FF]">
+              <span className="char extra-char inline-block">T</span>
+              <span className="char extra-char inline-block">E</span>
+              <span className="char extra-char inline-block">C</span>
+              <span className="char inline-block">H</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Tagline ── */}
+        <div className="mt-4 flex flex-col items-center gap-[6px]">
+          {/* horizontal rule that scales in */}
+          <div
+            className="tagline-line w-[18vw] h-px bg-white/10"
+            style={{ transformOrigin: "left center" }}
+            aria-hidden="true"
+          />
+          <p className="tagline-text text-[8px] tracking-[0.55em] text-white/18 uppercase font-mono">
+            Digital Excellence
+          </p>
+        </div>
+      </div>
+
+      {/* ── DT monogram — final zoom ── */}
+      <div
+        className="dt-final absolute z-[7] flex font-syne font-black text-[10vw] leading-none tracking-[-0.06em] uppercase  pointer-events-none"
+        style={{ transformOrigin: "center center" }}
+        aria-hidden="true"
+      >
+        <span className="text-white">D</span>
+        <span className="text-[#0066FF] ml-[-0.04em]">T</span>
+      </div>
+
+      {/* ── Particle canvas ── */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-[6] pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* ── HUD / Progress bar ── */}
+      <div className="hud-bar absolute bottom-[18px] left-[24px] right-[24px] z-[10] flex flex-col gap-[7px]">
+        <div className="flex justify-between items-center">
+          <span
+            ref={statusRef}
+            className="text-[7.5px] tracking-[0.32em] text-white/18 uppercase font-mono"
+          >
+            LOADING ASSETS
+          </span>
+          <span
+            ref={counterRef}
+            className="text-[10px] tracking-[0.22em] text-white/18 font-mono tabular-nums"
+          >
+            000
+          </span>
+        </div>
+        <div className="w-full h-px bg-white/[0.055] relative overflow-hidden">
+          <div
+            ref={fillRef}
+            className="h-full bg-[#0066FF] w-0"
+            style={{
+              transition: "width 52ms linear",
+              boxShadow:
+                "0 0 12px rgba(0,102,255,0.85), 0 0 4px rgba(0,102,255,1)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── Grain keyframe ── */}
+      <style>{`
+        @keyframes grain {
+          0%   { transform: translate(0,0); }
+          10%  { transform: translate(-2%,-3%); }
+          20%  { transform: translate(3%,2%); }
+          30%  { transform: translate(-1%,4%); }
+          40%  { transform: translate(4%,-1%); }
+          50%  { transform: translate(-3%,3%); }
+          60%  { transform: translate(2%,-4%); }
+          70%  { transform: translate(-4%,1%); }
+          80%  { transform: translate(1%,-2%); }
+          90%  { transform: translate(-2%,4%); }
+          100% { transform: translate(3%,-3%); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Preloader;

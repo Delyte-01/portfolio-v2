@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   
   const container = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -76,9 +77,37 @@ const Header = () => {
     }
   }, [isMenuOpen]);
 
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Find all sections marked as dark
+      const darkSections = document.querySelectorAll('[data-theme="dark"]');
+      const navHeight = 80; // Height of your navbar
+
+      let overDark = false;
+
+      darkSections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        // Check if the navbar is within the bounds of a dark section
+        if (rect.top <= 40 && rect.bottom >= 40) {
+          overDark = true;
+        }
+      });
+
+      setIsDark(overDark);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div ref={container}>
-      <header className="fixed top-0 left-0 w-full z-3500 backdrop-blur-2xl ">      
+      <header
+        className={`fixed top-0 left-0 w-full z-3500 backdrop-blur-2xl ${
+          isDark ? "bg-foreground" : "bg-transparent"
+        } `}
+      >
         <nav className="max-w-7xl  mx-auto px-6 h-20 flex items-center justify-between relative z-4000">
           {/* Logo */}
           <a
@@ -93,7 +122,13 @@ const Header = () => {
           {/* Desktop Nav */}
           <div className="hidden  md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
             {navItems.map((item) => (
-              <a key={item.key} href={`#${item.key}`} className="text-[16px] uppercase font-bold text-foreground font-syne">
+              <a
+                key={item.key}
+                href={`#${item.key}`}
+                className={`text-[16px] uppercase font-bold text-foreground font-syne ${
+                  isDark  ? "text-white" : "text-foreground"
+                }`}
+              >
                 {item.label}
               </a>
             ))}
@@ -105,9 +140,23 @@ const Header = () => {
             onClick={toggleMenu}
             className="md:hidden w-12 h-12 flex flex-col justify-center items-center gap-1.5 relative z-5000 pointer-events-auto"
           >
-            <span className={`block w-7 h-0.5 transition-all duration-500 ${isMenuOpen ? "rotate-45 translate-y-2 bg-white" : "bg-[#111111]"}`} />
-            <span className={`block w-7 h-[2px] bg-[#111111] transition-all duration-300 ${isMenuOpen ? "opacity-0" : "opacity-100"}`} />
-            <span className={`block w-7 h-[2px] transition-all duration-500 ${isMenuOpen ? "-rotate-45 -translate-y-[8px] bg-white" : "bg-[#111111]"}`} />
+            <span
+              className={`block w-7 h-0.5 transition-all duration-500 ${
+                isMenuOpen ? "rotate-45 translate-y-2 bg-white" : "bg-[#111111]"
+              }`}
+            />
+            <span
+              className={`block w-7 h-[2px] bg-[#111111] transition-all duration-300 ${
+                isMenuOpen ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <span
+              className={`block w-7 h-[2px] transition-all duration-500 ${
+                isMenuOpen
+                  ? "-rotate-45 -translate-y-[8px] bg-white"
+                  : "bg-[#111111]"
+              }`}
+            />
           </button>
         </nav>
       </header>
@@ -124,7 +173,9 @@ const Header = () => {
             <div key={item.key} className="overflow-hidden">
               <a
                 href={`#${item.key}`}
-                ref={(el) => { linksRef.current[index] = el; }}
+                ref={(el) => {
+                  linksRef.current[index] = el;
+                }}
                 onClick={closeMenu}
                 className="block font-syne text-white uppercase font-black text-[clamp(1.5rem,6vw,5rem)] leading-none"
               >
@@ -133,8 +184,6 @@ const Header = () => {
             </div>
           ))}
         </div>
-        
-      
       </div>
     </div>
   );

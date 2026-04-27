@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
-import { satoshi, syne } from "./font";
+import { clashDisplay, satoshi, syne } from "./font";
 import Header from "@/components/navbar";
 import SmoothScroll from "@/components/lenis";
 
@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${satoshi.variable} h-full antialiased`}
+      className={`${syne.variable} ${satoshi.variable} ${clashDisplay.variable} h-full antialiased`}
     >
       <body>
         <SmoothScroll>
