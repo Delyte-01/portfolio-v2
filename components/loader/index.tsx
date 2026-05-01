@@ -81,7 +81,6 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         onComplete,
       });
 
-      // Progress shimmer — runs across the full duration
       tl.to(
         progressLine,
         {
@@ -93,15 +92,11 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         0
       );
 
-      // PHASE 1 — Masked character rise with organic stagger
       tl.to(
         allChars,
         {
           y: "0%",
-          stagger: {
-            each: 0.055,
-            ease: "power2.out" as EaseName,
-          },
+          stagger: { each: 0.055, ease: "power2.out" as EaseName },
           duration: 1.3,
           ease: "expo.out" as EaseName,
           force3D: true,
@@ -109,7 +104,6 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         0
       );
 
-      // PHASE 2 — Words split apart (tension)
       tl.addLabel(PHASES.SPLIT.label, PHASES.SPLIT.offset)
         .to(
           wordTop,
@@ -132,7 +126,6 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
           PHASES.SPLIT.label
         );
 
-      // PHASE 3 — Morph: extras dissolve, "DT" crystallises
       tl.addLabel(PHASES.MORPH.label, PHASES.MORPH.offset)
         .to(
           extraLetters,
@@ -170,7 +163,6 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
           `${PHASES.MORPH.label}+=0.12`
         );
 
-      // PHASE 4 — Cinematic zoom-through + fade
       tl.addLabel(PHASES.ZOOM.label, PHASES.ZOOM.offset)
         .to(
           dtFinal,
@@ -180,7 +172,6 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
             ease: "power4.in" as EaseName,
             force3D: true,
             onStart: () => {
-              // Trigger hero at the exact frame zoom builds momentum
               document.dispatchEvent(new CustomEvent("triggerHeroAnim"));
             },
           },
@@ -199,11 +190,7 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         .to(progressLine, { opacity: 0, duration: 0.3 }, PHASES.ZOOM.label)
         .to(
           containerRef.current,
-          {
-            autoAlpha: 0,
-            duration: 0.55,
-            ease: "power2.inOut" as EaseName,
-          },
+          { autoAlpha: 0, duration: 0.55, ease: "power2.inOut" as EaseName },
           `${PHASES.ZOOM.label}+=1.05`
         );
     },
@@ -215,12 +202,12 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
       ref={containerRef}
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#060606] overflow-hidden"
     >
-      {/* Ambient glow behind DT */}
+      {/* Ambient glow behind DT — untouched */}
       <div className="dt-glow absolute inset-0 pointer-events-none flex items-center justify-center">
         <div className="w-[40vw] h-[40vw] rounded-full bg-[var(--primary)] opacity-0 blur-[80px]" />
       </div>
 
-      {/* Progress shimmer */}
+      {/* Progress shimmer — untouched */}
       <div
         className="progress-line absolute bottom-0 left-0 h-px w-full origin-left opacity-0"
         style={{
@@ -229,21 +216,52 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         }}
       />
 
-      {/* Stage */}
+      {/* ── Stage ── */}
       <div className="relative flex flex-col items-center justify-center gap-5">
-        {/* DELYTE — top word */}
-        <div className="word-top flex text-[clamp(2.5rem,12vw,10rem)] leading-none text-white tracking-tighter">
-          <div className="overflow-hidden flex">
-            {/* "D" — anchor, never fades */}
-            <span className="char inline-block font-clashDisplay font-black">
+        {/* ── DELYTE — graffiti blue block letter ── */}
+        <div className="word-top flex items-end leading-none tracking-tighter">
+          <div className="overflow-hidden flex items-end">
+            {/* "D" anchor — premium graffiti block */}
+            <span
+              className="char inline-block font-clashDisplay font-black leading-none"
+              style={{
+                fontSize: "clamp(2.5rem, 12vw, 10rem)",
+                /* Blue body with depth gradient */
+                background:
+                  "linear-gradient(160deg, #5BB8FF 0%, #1A8FFF 38%, #003D99 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                /* Hard dark offset — graffiti 3-D shadow */
+                filter:
+                  "drop-shadow(4px 5px 0px #001A66) drop-shadow(0 0 18px rgba(26,143,255,0.35))",
+                /* Tighten letter spacing on the anchor */
+                letterSpacing: "-0.04em",
+                textShadow: "none",
+              }}
+            >
               D
             </span>
-            {/* "elyte" — morphs away */}
-            <div className="extra-letters flex">
+
+            {/* "elyte" extras — muted, slightly smaller, dissolve on morph */}
+            <div className="extra-letters flex items-end">
               {DELYTE_EXTRA_CHARS.map((letter, i) => (
                 <span
                   key={`delyte-${i}`}
-                  className="char inline-block text-[#c4c4c4] ml-[0.02em] font-clashDisplay font-black"
+                  className="char inline-block font-clashDisplay font-black leading-none"
+                  style={{
+                    fontSize: "clamp(1.6rem, 7.5vw, 6.5rem)",
+                    /* Faded white — supporting cast, not competing with D */
+                    background:
+                      "linear-gradient(180deg, #FFFFFF 0%, #8AACCC 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    opacity: 0.72,
+                    marginLeft: "0.01em",
+                    filter: "drop-shadow(2px 3px 0px rgba(0,26,102,0.7))",
+                    letterSpacing: "-0.03em",
+                  }}
                 >
                   {letter}
                 </span>
@@ -252,19 +270,48 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
           </div>
         </div>
 
-        {/* TECH — bottom word */}
-        <div className="word-bottom flex text-[clamp(2rem,10vw,8.5rem)] leading-none tracking-tighter text-[var(--primary)]">
-          <div className="overflow-hidden flex">
-            {/* "T" — anchor, never fades */}
-            <span className="char inline-block font-clashDisplay font-black">
+        {/* ── TECH — graffiti white/chrome block letter ── */}
+        <div className="word-bottom flex items-end leading-none tracking-tighter">
+          <div className="overflow-hidden flex items-end">
+            {/* "T" anchor — white chrome with blue glow */}
+            <span
+              className="char inline-block font-clashDisplay font-black leading-none"
+              style={{
+                fontSize: "clamp(2rem, 10vw, 8.5rem)",
+                /* Chrome white gradient */
+                background:
+                  "linear-gradient(160deg, #FFFFFF 0%, #C8D8F0 45%, #8AAACE 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                /* Hard offset with blue haze */
+                filter:
+                  "drop-shadow(4px 5px 0px rgba(0,20,80,0.9)) drop-shadow(0 0 22px rgba(26,143,255,0.28))",
+                letterSpacing: "-0.04em",
+              }}
+            >
               T
             </span>
-            {/* "ech" — morphs away */}
-            <div className="extra-letters flex">
+
+            {/* "ech" extras */}
+            <div className="extra-letters flex items-end">
               {TECH_EXTRA_CHARS.map((letter, i) => (
                 <span
                   key={`tech-${i}`}
-                  className="char inline-block font-clashDisplay font-black"
+                  className="char inline-block font-clashDisplay font-black leading-none"
+                  style={{
+                    fontSize: "clamp(1.4rem, 6.5vw, 5.8rem)",
+                    /* Blue-tinted white extras */
+                    background:
+                      "linear-gradient(180deg, #AACCFF 0%, #5588CC 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    opacity: 0.68,
+                    marginLeft: "0.01em",
+                    filter: "drop-shadow(2px 3px 0px rgba(0,20,80,0.75))",
+                    letterSpacing: "-0.03em",
+                  }}
                 >
                   {letter}
                 </span>
@@ -273,7 +320,7 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
           </div>
         </div>
 
-        {/* DT — the final merged mark */}
+        {/* DT final mark — completely untouched */}
         <div className="dt-final absolute inset-0 flex items-center justify-center pointer-events-none">
           <span className="font-clashDisplay font-black text-[20vw] text-white tracking-[-0.06em] will-change-transform">
             DT
@@ -281,7 +328,7 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         </div>
       </div>
 
-      {/* Grain texture */}
+      {/* Grain texture — untouched */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -291,7 +338,7 @@ const Preloader = ({ onComplete }: PreloaderProps) => {
         }}
       />
 
-      {/* Vignette */}
+      {/* Vignette — untouched */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{

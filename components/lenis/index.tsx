@@ -35,6 +35,12 @@ export default function SmoothScroll({
         wheelMultiplier: 1,
         touchMultiplier: 2,
         infinite: false,
+        anchors: {
+          offset: -80,
+          onComplete: () => {
+            console.log("scrolled to anchor");
+          },
+        },
       }}
     >
       {children}

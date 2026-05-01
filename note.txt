@@ -1,339 +1,831 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+interface PreloaderProps {
+  onComplete: () => void;
 }
 
-interface Testimonial {
-  name: string;
-  role: string;
-  company: string;
-  text: string;
-  accent: string;
-  index: string;
+type EaseName =
+  | "power4.out"
+  | "power4.in"
+  | "power4.inOut"
+  | "expo.out"
+  | "expo.in"
+  | "power3.in"
+  | "power2.inOut"
+  | "power2.out"
+  | "power2.in";
+
+interface AnimationPhase {
+  label: string;
+  offset: string;
 }
 
-const testimonials: Testimonial[] = [
-  {
-    name: "Alex Rivera",
-    role: "Chief Executive",
-    company: "Nexus",
-    text: "David doesn't just build websites; he builds digital experiences that breathe. The motion design is second to none.",
-    accent: "#0047FF",
-    index: "01",
-  },
-  {
-    name: "Sarah Chen",
-    role: "Design Lead",
-    company: "Forma Studio",
-    text: "Working with Delyte Tech was a masterclass in frontend performance. The GSAP integration is buttery smooth.",
-    accent: "#FF3C00",
-    index: "02",
-  },
-  {
-    name: "James Knight",
-    role: "Product Owner",
-    company: "Archetype",
-    text: "He transformed our messy dashboard into a clean, architectural masterpiece. A true artist of the web.",
-    accent: "#00C896",
-    index: "03",
-  },
-];
+const PHASES: Record<string, AnimationPhase> = {
+  SPLIT: { label: "split", offset: "+=0.35" },
+  MORPH: { label: "morph", offset: "split+=0.8" },
+  ZOOM: { label: "zoom", offset: "morph+=1.0" },
+} as const;
 
-const Testimonials = () => {
-  const containerRef = useRef<HTMLElement>(null);
-  const deckRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState<number>(
-    testimonials.length - 1
-  );
+// ─── SVG graffiti: "delyte" ──────────────────────────────────────────────────
+const GraffitiDelyte = () => (
+  <svg
+    viewBox="0 0 560 200"
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-full max-w-[min(88vw,620px)] h-auto"
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id="dBlu" x1="0%" y1="0%" x2="20%" y2="100%">
+        <stop offset="0%" stopColor="#5BB8FF" />
+        <stop offset="45%" stopColor="#1A8FFF" />
+        <stop offset="100%" stopColor="#003D99" />
+      </linearGradient>
+      <linearGradient id="wGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#FFFFFF" />
+        <stop offset="100%" stopColor="#8AACCC" />
+      </linearGradient>
+    </defs>
+
+    {/* ── d ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M28 38 C28 38 24 38 22 43 L14 145 C14 145 13 150 18 150 L52 150 C52 150 100 149 110 101 C115 78 111 56 99 40 C87 24 70 16 54 16 Z"
+        fill="#001A66"
+        opacity="0.6"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M28 38 C28 38 24 38 22 43 L14 145 C14 145 13 150 18 150 L52 150 C52 150 100 149 110 101 C115 78 111 56 99 40 C87 24 70 16 54 16 Z"
+        fill="url(#dBlu)"
+      />
+      <path
+        d="M38 60 L38 128 L52 128 C52 128 88 127 95 98 C99 83 96 63 86 50 C76 37 63 30 52 30 Z"
+        fill="#060A14"
+      />
+      <path
+        d="M28 40 L22 108"
+        fill="none"
+        stroke="#8ED6FF"
+        strokeWidth="3"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+      <path
+        d="M28 38 C28 38 24 38 22 43 L14 145 C14 145 13 150 18 150 L52 150 C52 150 100 149 110 101 C115 78 111 56 99 40 C87 24 70 16 54 16 Z"
+        fill="none"
+        stroke="#5BB8FF"
+        strokeWidth="2"
+        opacity="0.75"
+      />
+      <line
+        x1="18"
+        y1="102"
+        x2="33"
+        y2="102"
+        stroke="#060A14"
+        strokeWidth="5"
+      />
+      <line
+        x1="19"
+        y1="110"
+        x2="32"
+        y2="110"
+        stroke="#060A14"
+        strokeWidth="3"
+        opacity="0.55"
+      />
+      <path
+        d="M24 149 Q23 160 26 169 Q28 174 24 180 Q20 186 24 192"
+        fill="none"
+        stroke="#1A8FFF"
+        strokeWidth="4"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      <ellipse cx="24" cy="196" rx="4" ry="5.5" fill="#1A8FFF" opacity="0.75" />
+      <circle cx="8" cy="52" r="2" fill="#1A8FFF" opacity="0.45" />
+      <circle cx="4" cy="65" r="1.5" fill="#1A8FFF" opacity="0.3" />
+    </g>
+
+    {/* ── e ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M122 16 L122 150 L190 150 L190 131 L144 131 L144 97 L183 97 L183 78 L144 78 L144 35 L188 35 L188 16 Z"
+        fill="#001A66"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M122 16 L122 150 L190 150 L190 131 L144 131 L144 97 L183 97 L183 78 L144 78 L144 35 L188 35 L188 16 Z"
+        fill="url(#wGrad)"
+        opacity="0.82"
+      />
+      <path
+        d="M122 16 L122 150 L190 150 L190 131 L144 131 L144 97 L183 97 L183 78 L144 78 L144 35 L188 35 L188 16 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="1.8"
+        opacity="0.6"
+      />
+      <line
+        x1="124"
+        y1="18"
+        x2="124"
+        y2="98"
+        stroke="#FFFFFF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      <line
+        x1="125"
+        y1="86"
+        x2="140"
+        y2="86"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+    </g>
+
+    {/* ── l ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M202 16 L202 150 L268 150 L268 130 L224 130 L224 16 Z"
+        fill="#001A66"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M202 16 L202 150 L268 150 L268 130 L224 130 L224 16 Z"
+        fill="url(#wGrad)"
+        opacity="0.82"
+      />
+      <path
+        d="M202 16 L202 150 L268 150 L268 130 L224 130 L224 16 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="1.8"
+        opacity="0.6"
+      />
+      <line
+        x1="204"
+        y1="18"
+        x2="204"
+        y2="118"
+        stroke="#FFFFFF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      <path
+        d="M264 150 Q263 160 266 169 Q268 174 265 179"
+        fill="none"
+        stroke="#AACCFF"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      <ellipse
+        cx="265"
+        cy="183"
+        rx="3.5"
+        ry="5"
+        fill="#AACCFF"
+        opacity="0.55"
+      />
+    </g>
+
+    {/* ── y ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M280 16 L304 73 L304 150 L326 150 L326 73 L350 16 L327 16 L315 51 L303 16 Z"
+        fill="#001A66"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M280 16 L304 73 L304 150 L326 150 L326 73 L350 16 L327 16 L315 51 L303 16 Z"
+        fill="url(#wGrad)"
+        opacity="0.82"
+      />
+      <path
+        d="M280 16 L304 73 L304 150 L326 150 L326 73 L350 16 L327 16 L315 51 L303 16 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="1.8"
+        opacity="0.6"
+      />
+      <line
+        x1="308"
+        y1="108"
+        x2="322"
+        y2="108"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+    </g>
+
+    {/* ── t ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M362 16 L464 16 L464 38 L424 38 L424 150 L402 150 L402 38 L362 38 Z"
+        fill="#001A66"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M362 16 L464 16 L464 38 L424 38 L424 150 L402 150 L402 38 L362 38 Z"
+        fill="url(#wGrad)"
+        opacity="0.82"
+      />
+      <path
+        d="M362 16 L464 16 L464 38 L424 38 L424 150 L402 150 L402 38 L362 38 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="1.8"
+        opacity="0.6"
+      />
+      <line
+        x1="364"
+        y1="18"
+        x2="462"
+        y2="18"
+        stroke="#FFFFFF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      <line
+        x1="405"
+        y1="87"
+        x2="421"
+        y2="87"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+      <path
+        d="M405 150 Q404 162 407 171 Q409 177 405 183"
+        fill="none"
+        stroke="#AACCFF"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      <ellipse
+        cx="405"
+        cy="187"
+        rx="3.5"
+        ry="5"
+        fill="#AACCFF"
+        opacity="0.55"
+      />
+    </g>
+
+    {/* ── e2 ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M476 16 L476 150 L542 150 L542 131 L498 131 L498 97 L538 97 L538 78 L498 78 L498 35 L540 35 L540 16 Z"
+        fill="#001A66"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M476 16 L476 150 L542 150 L542 131 L498 131 L498 97 L538 97 L538 78 L498 78 L498 35 L540 35 L540 16 Z"
+        fill="url(#wGrad)"
+        opacity="0.82"
+      />
+      <path
+        d="M476 16 L476 150 L542 150 L542 131 L498 131 L498 97 L538 97 L538 78 L498 78 L498 35 L540 35 L540 16 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="1.8"
+        opacity="0.6"
+      />
+      <line
+        x1="478"
+        y1="18"
+        x2="478"
+        y2="98"
+        stroke="#FFFFFF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      <line
+        x1="479"
+        y1="86"
+        x2="494"
+        y2="86"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+      <circle cx="544" cy="16" r="5" fill="#1A8FFF" opacity="0.9" />
+      <circle
+        cx="544"
+        cy="16"
+        r="9"
+        fill="none"
+        stroke="#1A8FFF"
+        strokeWidth="1.2"
+        opacity="0.3"
+      />
+    </g>
+  </svg>
+);
+
+// ─── SVG graffiti: "tech" ────────────────────────────────────────────────────
+const GraffitiTech = () => (
+  <svg
+    viewBox="0 0 560 175"
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-full max-w-[min(68vw,480px)] h-auto"
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id="tWh" x1="0%" y1="0%" x2="20%" y2="100%">
+        <stop offset="0%" stopColor="#FFFFFF" />
+        <stop offset="50%" stopColor="#C8D8F0" />
+        <stop offset="100%" stopColor="#7A9AC0" />
+      </linearGradient>
+      <linearGradient id="echG" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#1A8FFF" />
+        <stop offset="100%" stopColor="#003D99" />
+      </linearGradient>
+    </defs>
+
+    {/* ── t ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M40 16 L220 16 L220 42 L146 42 L146 152 L114 152 L114 42 L40 42 Z"
+        fill="#001033"
+        opacity="0.55"
+        transform="translate(5,5)"
+      />
+      <path
+        d="M40 16 L220 16 L220 42 L146 42 L146 152 L114 152 L114 42 L40 42 Z"
+        fill="url(#tWh)"
+      />
+      <path
+        d="M40 16 L220 16 L220 42 L146 42 L146 152 L114 152 L114 42 L40 42 Z"
+        fill="none"
+        stroke="#CCDDFF"
+        strokeWidth="2"
+        opacity="0.65"
+      />
+      <line
+        x1="43"
+        y1="19"
+        x2="217"
+        y2="19"
+        stroke="#FFFFFF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+      <line
+        x1="118"
+        y1="44"
+        x2="118"
+        y2="146"
+        stroke="#FFFFFF"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        opacity="0.4"
+      />
+      <line
+        x1="118"
+        y1="97"
+        x2="142"
+        y2="97"
+        stroke="#060A14"
+        strokeWidth="5"
+      />
+      <line
+        x1="119"
+        y1="105"
+        x2="141"
+        y2="105"
+        stroke="#060A14"
+        strokeWidth="3"
+        opacity="0.5"
+      />
+      <path
+        d="M52 41 Q51 52 54 61 Q56 67 51 74 Q47 81 52 88"
+        fill="none"
+        stroke="#FFFFFF"
+        strokeWidth="4"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      <ellipse cx="52" cy="92" rx="4" ry="5.5" fill="#FFFFFF" opacity="0.6" />
+      <path
+        d="M126 151 Q125 162 128 171"
+        fill="none"
+        stroke="#FFFFFF"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+      <circle cx="40" cy="16" r="5.5" fill="#FFFFFF" opacity="0.9" />
+      <circle
+        cx="40"
+        cy="16"
+        r="9"
+        fill="none"
+        stroke="#AACCFF"
+        strokeWidth="1.2"
+        opacity="0.35"
+      />
+      <circle cx="220" cy="16" r="5.5" fill="#1A8FFF" opacity="0.9" />
+      <circle
+        cx="220"
+        cy="16"
+        r="9"
+        fill="none"
+        stroke="#1A8FFF"
+        strokeWidth="1.2"
+        opacity="0.35"
+      />
+    </g>
+
+    {/* ── e ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M238 16 L238 152 L320 152 L320 132 L262 132 L262 97 L312 97 L312 77 L262 77 L262 36 L318 36 L318 16 Z"
+        fill="#001033"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M238 16 L238 152 L320 152 L320 132 L262 132 L262 97 L312 97 L312 77 L262 77 L262 36 L318 36 L318 16 Z"
+        fill="url(#echG)"
+        opacity="0.9"
+      />
+      <path
+        d="M238 16 L238 152 L320 152 L320 132 L262 132 L262 97 L312 97 L312 77 L262 77 L262 36 L318 36 L318 16 Z"
+        fill="none"
+        stroke="#5BB8FF"
+        strokeWidth="1.8"
+        opacity="0.65"
+      />
+      <line
+        x1="240"
+        y1="18"
+        x2="240"
+        y2="105"
+        stroke="#8ED6FF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+      <line
+        x1="241"
+        y1="85"
+        x2="258"
+        y2="85"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+    </g>
+
+    {/* ── c ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M338 16 C338 16 330 16 328 26 L328 142 C328 142 328 152 338 152 L414 152 L414 132 L352 132 L352 36 L412 36 L412 16 Z"
+        fill="#001033"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M338 16 C338 16 330 16 328 26 L328 142 C328 142 328 152 338 152 L414 152 L414 132 L352 132 L352 36 L412 36 L412 16 Z"
+        fill="url(#echG)"
+        opacity="0.9"
+      />
+      <path
+        d="M338 16 C338 16 330 16 328 26 L328 142 C328 142 328 152 338 152 L414 152 L414 132 L352 132 L352 36 L412 36 L412 16 Z"
+        fill="none"
+        stroke="#5BB8FF"
+        strokeWidth="1.8"
+        opacity="0.65"
+      />
+      <line
+        x1="331"
+        y1="18"
+        x2="331"
+        y2="105"
+        stroke="#8ED6FF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+      <path
+        d="M410 151 Q409 162 412 171"
+        fill="none"
+        stroke="#1A8FFF"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+    </g>
+
+    {/* ── h ── */}
+    <g className="graffiti-letter">
+      <path
+        d="M428 16 L428 152 L452 152 L452 96 L496 96 L496 152 L520 152 L520 16 L496 16 L496 74 L452 74 L452 16 Z"
+        fill="#001033"
+        opacity="0.5"
+        transform="translate(4,4)"
+      />
+      <path
+        d="M428 16 L428 152 L452 152 L452 96 L496 96 L496 152 L520 152 L520 16 L496 16 L496 74 L452 74 L452 16 Z"
+        fill="url(#echG)"
+        opacity="0.9"
+      />
+      <path
+        d="M428 16 L428 152 L452 152 L452 96 L496 96 L496 152 L520 152 L520 16 L496 16 L496 74 L452 74 L452 16 Z"
+        fill="none"
+        stroke="#5BB8FF"
+        strokeWidth="1.8"
+        opacity="0.65"
+      />
+      <line
+        x1="430"
+        y1="18"
+        x2="430"
+        y2="130"
+        stroke="#8ED6FF"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+      <line
+        x1="455"
+        y1="84"
+        x2="493"
+        y2="84"
+        stroke="#060A14"
+        strokeWidth="4"
+      />
+      <path
+        d="M498 151 Q497 162 500 171"
+        fill="none"
+        stroke="#1A8FFF"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+      <circle cx="520" cy="152" r="4.5" fill="#1A8FFF" opacity="0.8" />
+    </g>
+  </svg>
+);
+
+// ─── Preloader ────────────────────────────────────────────────────────────────
+const Preloader = ({ onComplete }: PreloaderProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      const cards = gsap.utils.toArray<HTMLElement>(".t-card");
-      const isMobile = window.innerWidth < 768;
+      if (!containerRef.current) return;
 
-      // Set initial states for cards above first
-      cards.forEach((card, i) => {
-        if (i < cards.length - 1) {
-          gsap.set(card, {
-            yPercent: isMobile ? 110 : 105,
-            rotate: i % 2 === 0 ? 6 : -6,
-            scale: 0.88,
-          });
-        }
+      const wordTop =
+        containerRef.current.querySelector<HTMLElement>(".word-top");
+      const wordBottom =
+        containerRef.current.querySelector<HTMLElement>(".word-bottom");
+      const dtFinal =
+        containerRef.current.querySelector<HTMLElement>(".dt-final");
+      const dtGlow =
+        containerRef.current.querySelector<HTMLElement>(".dt-glow");
+      const progressLine =
+        containerRef.current.querySelector<HTMLElement>(".progress-line");
+      const delyteLetters = gsap.utils.toArray<HTMLElement>(
+        ".word-top .graffiti-letter"
+      );
+      const techLetters = gsap.utils.toArray<HTMLElement>(
+        ".word-bottom .graffiti-letter"
+      );
+
+      if (!wordTop || !wordBottom || !dtFinal || !dtGlow || !progressLine)
+        return;
+
+      // ── Initial state ──────────────────────────────────────────────────────
+      gsap.set([...delyteLetters, ...techLetters], {
+        y: 50,
+        opacity: 0,
+        filter: "blur(8px)",
+        force3D: true,
       });
+      gsap.set(dtFinal, { opacity: 0, scale: 0.82, filter: "blur(10px)" });
+      gsap.set(dtGlow, { opacity: 0, scale: 1 });
+      gsap.set(progressLine, { scaleX: 0, transformOrigin: "left center" });
 
+      // ── Timeline ───────────────────────────────────────────────────────────
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: `+=${cards.length * (isMobile ? 80 : 100)}%`,
-          pin: true,
-          scrub: isMobile ? 0.6 : 1,
-          onUpdate: (self) => {
-            const progress = self.progress;
-            const step = 1 / cards.length;
-            const idx = Math.min(cards.length - 1, Math.floor(progress / step));
-            setActiveIndex(cards.length - 1 - idx);
-          },
-        },
+        defaults: { ease: "power4.out" as EaseName },
+        onComplete,
       });
 
-      // Animate cards from back to front
-      for (let i = 0; i < cards.length - 1; i++) {
-        const card = cards[i];
+      // Progress shimmer
+      tl.to(
+        progressLine,
+        {
+          scaleX: 1,
+          opacity: 1,
+          duration: 3.8,
+          ease: "power2.inOut" as EaseName,
+        },
+        0
+      );
 
-        tl.to(
-          card,
+      // ── ENTRANCE: delyte letters rise + unblur with stagger ──
+      tl.to(
+        delyteLetters,
+        {
+          y: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.9,
+          ease: "expo.out" as EaseName,
+          force3D: true,
+          stagger: { each: 0.07, ease: "power2.out" as EaseName },
+        },
+        0.1
+      );
+
+      // ── ENTRANCE: tech letters follow, slightly delayed ──
+      tl.to(
+        techLetters,
+        {
+          y: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.9,
+          ease: "expo.out" as EaseName,
+          force3D: true,
+          stagger: { each: 0.08, ease: "power2.out" as EaseName },
+        },
+        0.4
+      );
+
+      // PHASE 2 — Words split apart
+      tl.addLabel(PHASES.SPLIT.label, PHASES.SPLIT.offset)
+        .to(
+          wordTop,
           {
-            yPercent: 0,
-            rotate: i % 2 === 0 ? -1.5 : 1.5,
-            scale: 1,
-            duration: 1.2,
-            ease: "expo.out",
+            y: -36,
+            duration: 1.7,
+            ease: "expo.inOut" as EaseName,
+            force3D: true,
           },
-          i === 0 ? 0 : `-=0.5`
+          PHASES.SPLIT.label
+        )
+        .to(
+          wordBottom,
+          {
+            y: 36,
+            duration: 1.7,
+            ease: "expo.inOut" as EaseName,
+            force3D: true,
+          },
+          PHASES.SPLIT.label
         );
 
-        // Push previous cards upward slightly as new one arrives
-        if (i > 0) {
-          tl.to(
-            cards.slice(0, i),
-            {
-              yPercent: isMobile ? -8 : -6,
-              scale: 0.97,
-              duration: 0.8,
-              ease: "power2.inOut",
+      // PHASE 3 — Morph: all letters dissolve, DT crystallises
+      tl.addLabel(PHASES.MORPH.label, PHASES.MORPH.offset)
+        .to(
+          [...delyteLetters, ...techLetters],
+          {
+            opacity: 0,
+            filter: "blur(18px)",
+            scale: 0.82,
+            duration: 0.65,
+            ease: "power3.in" as EaseName,
+            stagger: { each: 0.03, from: "edges" as const },
+          },
+          PHASES.MORPH.label
+        )
+        .to(
+          dtGlow,
+          {
+            opacity: 1,
+            scale: 1.5,
+            duration: 0.9,
+            ease: "power2.out" as EaseName,
+          },
+          `${PHASES.MORPH.label}+=0.05`
+        )
+        .to(
+          dtFinal,
+          {
+            opacity: 1,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.6,
+            ease: "expo.out" as EaseName,
+          },
+          `${PHASES.MORPH.label}+=0.12`
+        );
+
+      // PHASE 4 — Cinematic zoom-through
+      tl.addLabel(PHASES.ZOOM.label, PHASES.ZOOM.offset)
+        .to(
+          dtFinal,
+          {
+            scale: 220,
+            duration: 1.6,
+            ease: "power4.in" as EaseName,
+            force3D: true,
+            onStart: () => {
+              document.dispatchEvent(new CustomEvent("triggerHeroAnim"));
             },
-            "<"
-          );
-        }
-      }
+          },
+          PHASES.ZOOM.label
+        )
+        .to(
+          dtGlow,
+          {
+            opacity: 0,
+            scale: 0.4,
+            duration: 0.5,
+            ease: "power2.in" as EaseName,
+          },
+          PHASES.ZOOM.label
+        )
+        .to(progressLine, { opacity: 0, duration: 0.3 }, PHASES.ZOOM.label)
+        .to(
+          containerRef.current,
+          {
+            autoAlpha: 0,
+            duration: 0.55,
+            ease: "power2.inOut" as EaseName,
+          },
+          `${PHASES.ZOOM.label}+=1.05`
+        );
     },
     { scope: containerRef }
   );
 
   return (
-    <section
+    <div
       ref={containerRef}
-      className="h-screen w-full flex items-center justify-center relative overflow-hidden"
-      style={{ backgroundColor: "#F5F2EC" }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#060606] overflow-hidden"
     >
-      {/* Grain texture overlay */}
+      {/* Ambient glow — untouched */}
+      <div className="dt-glow absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="w-[40vw] h-[40vw] rounded-full bg-[var(--primary)] opacity-0 blur-[80px]" />
+      </div>
+
+      {/* Progress shimmer — untouched */}
       <div
-        className="absolute inset-0 pointer-events-none z-0"
+        className="progress-line absolute bottom-0 left-0 h-px w-full origin-left opacity-0"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-          opacity: 0.04,
+          background:
+            "linear-gradient(90deg, transparent, var(--primary), #c4b5fd, transparent)",
         }}
       />
 
-      {/* Top label row */}
-      <div
-        className="absolute top-6 md:top-10 left-5 md:left-12 right-5 md:right-12 flex items-start justify-between z-20"
-        style={{ fontFamily: "'DM Mono', monospace" }}
-      >
-        <div>
-          <span
-            className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-semibold block"
-            style={{ color: "#9E9587" }}
-          >
-            ✦ Social Proof
+      {/* ── Stage ── */}
+      <div className="relative flex flex-col items-center justify-center gap-8">
+        {/* delyte — graffiti SVG, each <g> is a GSAP target */}
+        <div className="word-top flex items-center justify-center">
+          <GraffitiDelyte />
+        </div>
+
+        {/* tech — graffiti SVG */}
+        <div className="word-bottom flex items-center justify-center">
+          <GraffitiTech />
+        </div>
+
+        {/* DT zoom mark — completely untouched */}
+        <div className="dt-final absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="font-clashDisplay font-black text-[20vw] text-white tracking-[-0.06em] will-change-transform">
+            DT
           </span>
-          <h2
-            className="mt-1 text-2xl md:text-5xl font-black uppercase leading-none"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              letterSpacing: "0.04em",
-              color: "#1A1714",
-            }}
-          >
-            Client Words
-          </h2>
-        </div>
-
-        {/* Dot progress indicator */}
-        <div className="flex flex-col gap-2 mt-1">
-          {testimonials.map((_, i) => (
-            <div
-              key={i}
-              className="transition-all duration-500"
-              style={{
-                width: activeIndex === i ? 24 : 6,
-                height: 6,
-                borderRadius: 99,
-                backgroundColor:
-                  activeIndex === i ? testimonials[i].accent : "#C8C4BB",
-              }}
-            />
-          ))}
         </div>
       </div>
 
-      {/* Card Deck */}
+      {/* Grain — untouched */}
       <div
-        ref={deckRef}
-        className="relative z-10"
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
-          width: "min(92vw, 760px)",
-          height: "min(72vw, 440px)",
-          marginTop: "clamp(40px, 8vw, 80px)",
+          backgroundImage:
+            "url('https://grainy-gradients.vercel.app/noise.svg')",
+          backgroundSize: "200px",
         }}
-      >
-        {testimonials.map((t, i) => (
-          <div
-            key={i}
-            className="t-card absolute inset-0 flex flex-col justify-between"
-            style={{
-              borderRadius: "clamp(16px, 3vw, 32px)",
-              padding: "clamp(20px, 4vw, 48px)",
-              backgroundColor: "#FFFFFF",
-              border: "1px solid rgba(0,0,0,0.07)",
-              boxShadow:
-                "0 4px 6px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.07)",
-              zIndex: i + 1,
-            }}
-          >
-            {/* Top row: index + accent line */}
-            <div className="flex items-center justify-between">
-              <span
-                style={{
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: "clamp(10px, 1.5vw, 13px)",
-                  color: "#B0AA9F",
-                  letterSpacing: "0.15em",
-                }}
-              >
-                {t.index} / {testimonials.length.toString().padStart(2, "0")}
-              </span>
-              <div
-                style={{
-                  height: 2,
-                  width: "clamp(40px, 8vw, 80px)",
-                  backgroundColor: t.accent,
-                  borderRadius: 99,
-                  opacity: 0.7,
-                }}
-              />
-            </div>
+      />
 
-            {/* Quote text */}
-            <p
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(1rem, 3.2vw, 1.75rem)",
-                fontWeight: 500,
-                lineHeight: 1.45,
-                color: "#1A1714",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              &ldquo;{t.text}&rdquo;
-            </p>
-
-            {/* Author row */}
-            <div
-              className="flex items-center gap-3 pt-4"
-              style={{
-                borderTop: "1px solid rgba(0,0,0,0.07)",
-              }}
-            >
-              {/* Avatar */}
-              <div
-                style={{
-                  width: "clamp(36px, 5vw, 48px)",
-                  height: "clamp(36px, 5vw, 48px)",
-                  borderRadius: "50%",
-                  backgroundColor: t.accent,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(14px, 2vw, 20px)",
-                  letterSpacing: "0.05em",
-                  flexShrink: 0,
-                }}
-              >
-                {t.name.charAt(0)}
-              </div>
-
-              <div>
-                <span
-                  className="block font-bold leading-tight"
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: "clamp(12px, 1.6vw, 15px)",
-                    color: "#1A1714",
-                  }}
-                >
-                  {t.name}
-                </span>
-                <span
-                  className="block"
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: "clamp(9px, 1.2vw, 11px)",
-                    color: t.accent,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    fontWeight: 700,
-                    marginTop: 2,
-                  }}
-                >
-                  {t.role} · {t.company}
-                </span>
-              </div>
-
-              {/* Decorative accent corner */}
-              <div className="ml-auto self-end">
-                <svg
-                  width="clamp(18px, 3vw, 28px)"
-                  height="clamp(18px, 3vw, 28px)"
-                  viewBox="0 0 28 28"
-                  fill="none"
-                >
-                  <path
-                    d="M2 26 L26 2 M16 2 L26 2 L26 12"
-                    stroke={t.accent}
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity="0.5"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom scroll hint */}
+      {/* Vignette — untouched */}
       <div
-        className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          fontFamily: "'DM Mono', monospace",
-          fontSize: "10px",
-          letterSpacing: "0.2em",
-          color: "#9E9587",
-          textTransform: "uppercase",
+          background:
+            "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.65) 100%)",
         }}
-      >
-        <span>Scroll</span>
-        <div
-          style={{
-            width: 1,
-            height: 32,
-            background: "linear-gradient(to bottom, #9E9587, transparent)",
-          }}
-        />
-      </div>
-    </section>
+      />
+    </div>
   );
 };
 
-export default Testimonials;
+export default Preloader;

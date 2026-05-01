@@ -166,6 +166,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
 
   return (
     <div
+      id="projects"
       className="project-wrap w-full flex-shrink-0 lg:w-[68vw] lg:px-10 mb-8 lg:mb-0"
       style={{ perspective: "1400px" }}
     >

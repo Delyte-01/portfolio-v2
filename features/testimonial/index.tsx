@@ -329,6 +329,7 @@ const Testimonials = () => {
       `}</style>
 
       <section
+        id="testimonial"
         className="testi-section py-20 md:py-28 overflow-hidden"
         style={{
           background:

@@ -219,6 +219,7 @@ const Hero = ({ start }: HeroProps) => {
       */}
       <section
         ref={container}
+        id="home"
         className={`relative w-full pt-25 h-screen flex flex-col overflow-hidden bg-[#f5f3ef] cursor-none transition-transform duration-1000 ease-out ${
           start ? "scale-100 opacity-100" : "scale-110 opacity-0"
         }`}

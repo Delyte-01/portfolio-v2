@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import GraffitiLogo from "../logo";
 
 type SectionKey = "home" | "about" | "projects" | "testimonial" | "contact";
 
@@ -110,14 +111,15 @@ const Header = () => {
       >
         <nav className="max-w-7xl  mx-auto px-6 h-20 flex items-center justify-between relative z-4000">
           {/* Logo */}
-          <a
+          {/* <a
             href="#home"
             className={`text-3xl font-black tracking-tighter transition-colors duration-500 ${
               isMenuOpen ? "text-white" : "text-[#111111]"
             }`}
           >
             D<span className="text-primary">.</span>
-          </a>
+          </a> */}
+          <GraffitiLogo />
 
           {/* Desktop Nav */}
           <div className="hidden  md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">

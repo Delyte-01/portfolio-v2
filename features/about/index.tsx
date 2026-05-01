@@ -327,6 +327,7 @@ const About = () => {
           ref={maskRef}
           className="lg:absolute inset-0 z-10 w-full h-full bg-[#0a0a0a]"
           style={{ clipPath: "circle(0% at 15% 85%)", willChange: "clip-path" }}
+          id="about"
         >
           {/* Bg image */}
           {/* <div className="absolute inset-0 z-0 overflow-hidden">
@@ -397,7 +398,6 @@ const About = () => {
                     </em>
                     .
                   </p>
-               
                 </div>
 
                 <div className="md:col-span-6 bio-item border-l border-white/8 pl-6 md:pl-10">

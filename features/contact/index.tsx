@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { GiThunderBlade } from "react-icons/gi";
 import { LiaLinkedin } from "react-icons/lia";
 import { BsInstagram } from "react-icons/bs";
+import GraffitiLogo from "@/components/logo";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -615,18 +616,7 @@ const ContactSection = () => {
                 className="f-item"
                 style={{ display: "flex", flexDirection: "column", gap: 4 }}
               >
-                <span
-                  className="ct-display"
-                  style={{
-                    fontSize: "1.6rem",
-                    fontWeight: 900,
-                    color: "var(--ct-text)",
-                    letterSpacing: "-0.04em",
-                    lineHeight: 1,
-                  }}
-                >
-                  DelyteTech.
-                </span>
+                <GraffitiLogo />
                 <span className="ct-label" style={{ marginTop: 4 }}>
                   Frontend Engineer & Motion Designer
                 </span>
