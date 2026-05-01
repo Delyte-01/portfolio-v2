@@ -1,9 +1,14 @@
 "use client";
-import Comp from "@/components/comp1";
+
 import Preloader from "@/components/loader";
 import About from "@/features/about";
+import BentoCertificates from "@/features/certificate";
+import ContactSection from "@/features/contact";
 import Hero from "@/features/hero";
 import Projects from "@/features/projects";
+import Testimonials from "@/features/testimonial";
+
+
 import { useState } from "react";
 
 export default function Home() {
@@ -16,7 +21,9 @@ export default function Home() {
         <Hero start={!isLoading} />
         <About />
         <Projects />
-        <Comp />
+        <Testimonials />
+        <BentoCertificates />
+        <ContactSection />
       </div>
     </main>
   );

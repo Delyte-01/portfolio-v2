@@ -1,170 +1,339 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-const Preloader = ({ onComplete }: { onComplete: () => void }) => {
-  const containerRef = useRef(null);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+interface Testimonial {
+  name: string;
+  role: string;
+  company: string;
+  text: string;
+  accent: string;
+  index: string;
+}
+
+const testimonials: Testimonial[] = [
+  {
+    name: "Alex Rivera",
+    role: "Chief Executive",
+    company: "Nexus",
+    text: "David doesn't just build websites; he builds digital experiences that breathe. The motion design is second to none.",
+    accent: "#0047FF",
+    index: "01",
+  },
+  {
+    name: "Sarah Chen",
+    role: "Design Lead",
+    company: "Forma Studio",
+    text: "Working with Delyte Tech was a masterclass in frontend performance. The GSAP integration is buttery smooth.",
+    accent: "#FF3C00",
+    index: "02",
+  },
+  {
+    name: "James Knight",
+    role: "Product Owner",
+    company: "Archetype",
+    text: "He transformed our messy dashboard into a clean, architectural masterpiece. A true artist of the web.",
+    accent: "#00C896",
+    index: "03",
+  },
+];
+
+const Testimonials = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  const deckRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(
+    testimonials.length - 1
+  );
 
   useGSAP(
     () => {
+      const cards = gsap.utils.toArray<HTMLElement>(".t-card");
+      const isMobile = window.innerWidth < 768;
+
+      // Set initial states for cards above first
+      cards.forEach((card, i) => {
+        if (i < cards.length - 1) {
+          gsap.set(card, {
+            yPercent: isMobile ? 110 : 105,
+            rotate: i % 2 === 0 ? 6 : -6,
+            scale: 0.88,
+          });
+        }
+      });
+
       const tl = gsap.timeline({
-        onComplete: () => onComplete(),
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: `+=${cards.length * (isMobile ? 80 : 100)}%`,
+          pin: true,
+          scrub: isMobile ? 0.6 : 1,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const step = 1 / cards.length;
+            const idx = Math.min(cards.length - 1, Math.floor(progress / step));
+            setActiveIndex(cards.length - 1 - idx);
+          },
+        },
       });
 
-      // Initial Hide: Letters are scaled up and blurred
-      gsap.set(".char", {
-        y: 200,
-        opacity: 0,
-        scale: 1.5,
-        filter: "blur(20px)",
-        skewX: 20,
-      });
+      // Animate cards from back to front
+      for (let i = 0; i < cards.length - 1; i++) {
+        const card = cards[i];
 
-      tl
-        // 1. THE REVEAL: Aggressive burst of letters
-        .to(".char", {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          skewX: 0,
-          stagger: 0.04,
-          duration: 1.2,
-          ease: "expo.out",
-        })
-
-        // 2. THE TENSION: A subtle "breathing" scale while they wait
-        .to(
-          ".dt-logo",
+        tl.to(
+          card,
           {
-            scale: 1.05,
-            duration: 2,
-            ease: "sine.inOut",
+            yPercent: 0,
+            rotate: i % 2 === 0 ? -1.5 : 1.5,
+            scale: 1,
+            duration: 1.2,
+            ease: "expo.out",
           },
-          "-=0.5"
-        )
-
-        // 3. THE IMPACT: Slamming into DT (Fast & Violent)
-        .to(
-          ".extra-char",
-          {
-            opacity: 0,
-            scale: 0,
-            x: (i) => (i % 2 === 0 ? -100 : 100), // Shatter effect
-            duration: 0.6,
-            ease: "expo.in",
-          },
-          "-=0.5"
-        )
-
-        .to(
-          ".word-left",
-          {
-            x: "18%", // Specific nudge for Syne "D"
-            duration: 0.5,
-            ease: "back.inOut(2)",
-          },
-          "-=0.6"
-        )
-
-        .to(
-          ".word-right",
-          {
-            x: "-18%", // Specific nudge for Syne "T"
-            duration: 0.5,
-            ease: "back.inOut(2)",
-          },
-          "-=0.6"
-        )
-
-        // 4. THE SHAKE: Small screen shake on impact
-        .to(
-          containerRef.current,
-          {
-            x: 2,
-            y: -2,
-            repeat: 5,
-            yoyo: true,
-            duration: 0.05,
-          },
-          "-=0.1"
-        )
-
-        // 5. THE VOID: Exploding through the screen
-        .to(".dt-logo", {
-          scale: 200,
-          opacity: 0,
-          duration: 1.5,
-          ease: "power4.in",
-        })
-
-        .to(
-          containerRef.current,
-          {
-            opacity: 0,
-            duration: 0.5,
-          },
-          "-=0.8"
+          i === 0 ? 0 : `-=0.5`
         );
+
+        // Push previous cards upward slightly as new one arrives
+        if (i > 0) {
+          tl.to(
+            cards.slice(0, i),
+            {
+              yPercent: isMobile ? -8 : -6,
+              scale: 0.97,
+              duration: 0.8,
+              ease: "power2.inOut",
+            },
+            "<"
+          );
+        }
+      }
     },
     { scope: containerRef }
   );
 
   return (
-    <div
+    <section
       ref={containerRef}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505] overflow-hidden select-none"
+      className="h-screen w-full flex items-center justify-center relative overflow-hidden"
+      style={{ backgroundColor: "#F5F2EC" }}
     >
-      {/* Background Texture for Cinematic look */}
-      <div className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay bg-[url('https://res.cloudinary.com/dlv7hi98b/image/upload/v1680112443/noise_v6m7p2.png')]" />
+      {/* Grain texture overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+          opacity: 0.04,
+        }}
+      />
 
-      <div className="dt-logo relative flex items-center justify-center w-full overflow-visible">
-        <div className="flex font-syne font-[1000] font-black text-[8vw] leading-none tracking-[-0.08em] uppercase italic">
-          {/* LEFT: DELYTE */}
-          <div className="word-left flex text-white relative">
-            <div className="overflow-hidden flex">
-              <span className="char inline-block">D</span>
-              <span className="extra-char char inline-block ">
-                E
-              </span>
-              <span className="extra-char char inline-block ">
-                L
-              </span>
-              <span className="extra-char char inline-block ">
-                Y
-              </span>
-              <span className="extra-char char inline-block ">
-                T
-              </span>
-              <span className="extra-char char inline-block ">
-                E
-              </span>
-            </div>
-          </div>
-
-          {/* RIGHT: TECH */}
-          <div className="word-right flex text-[var(--primary)] relative ml-[-2vw]">
-            <div className="overflow-hidden flex">
-              <span className="extra-char char inline-block ">
-                T
-              </span>
-              <span className="extra-char char inline-block ">
-                E
-              </span>
-              <span className="extra-char char inline-block ">
-                C
-              </span>
-              <span className="char inline-block">H</span>
-            </div>
-          </div>
+      {/* Top label row */}
+      <div
+        className="absolute top-6 md:top-10 left-5 md:left-12 right-5 md:right-12 flex items-start justify-between z-20"
+        style={{ fontFamily: "'DM Mono', monospace" }}
+      >
+        <div>
+          <span
+            className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-semibold block"
+            style={{ color: "#9E9587" }}
+          >
+            ✦ Social Proof
+          </span>
+          <h2
+            className="mt-1 text-2xl md:text-5xl font-black uppercase leading-none"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              letterSpacing: "0.04em",
+              color: "#1A1714",
+            }}
+          >
+            Client Words
+          </h2>
         </div>
 
-        {/* Cinematic Flare */}
-        <div className="absolute w-[60vw] h-[20vw] bg-[#0066FF]/10 blur-[120px] rounded-full pointer-events-none" />
+        {/* Dot progress indicator */}
+        <div className="flex flex-col gap-2 mt-1">
+          {testimonials.map((_, i) => (
+            <div
+              key={i}
+              className="transition-all duration-500"
+              style={{
+                width: activeIndex === i ? 24 : 6,
+                height: 6,
+                borderRadius: 99,
+                backgroundColor:
+                  activeIndex === i ? testimonials[i].accent : "#C8C4BB",
+              }}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Card Deck */}
+      <div
+        ref={deckRef}
+        className="relative z-10"
+        style={{
+          width: "min(92vw, 760px)",
+          height: "min(72vw, 440px)",
+          marginTop: "clamp(40px, 8vw, 80px)",
+        }}
+      >
+        {testimonials.map((t, i) => (
+          <div
+            key={i}
+            className="t-card absolute inset-0 flex flex-col justify-between"
+            style={{
+              borderRadius: "clamp(16px, 3vw, 32px)",
+              padding: "clamp(20px, 4vw, 48px)",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid rgba(0,0,0,0.07)",
+              boxShadow:
+                "0 4px 6px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.07)",
+              zIndex: i + 1,
+            }}
+          >
+            {/* Top row: index + accent line */}
+            <div className="flex items-center justify-between">
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "clamp(10px, 1.5vw, 13px)",
+                  color: "#B0AA9F",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                {t.index} / {testimonials.length.toString().padStart(2, "0")}
+              </span>
+              <div
+                style={{
+                  height: 2,
+                  width: "clamp(40px, 8vw, 80px)",
+                  backgroundColor: t.accent,
+                  borderRadius: 99,
+                  opacity: 0.7,
+                }}
+              />
+            </div>
+
+            {/* Quote text */}
+            <p
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "clamp(1rem, 3.2vw, 1.75rem)",
+                fontWeight: 500,
+                lineHeight: 1.45,
+                color: "#1A1714",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              &ldquo;{t.text}&rdquo;
+            </p>
+
+            {/* Author row */}
+            <div
+              className="flex items-center gap-3 pt-4"
+              style={{
+                borderTop: "1px solid rgba(0,0,0,0.07)",
+              }}
+            >
+              {/* Avatar */}
+              <div
+                style={{
+                  width: "clamp(36px, 5vw, 48px)",
+                  height: "clamp(36px, 5vw, 48px)",
+                  borderRadius: "50%",
+                  backgroundColor: t.accent,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: "clamp(14px, 2vw, 20px)",
+                  letterSpacing: "0.05em",
+                  flexShrink: 0,
+                }}
+              >
+                {t.name.charAt(0)}
+              </div>
+
+              <div>
+                <span
+                  className="block font-bold leading-tight"
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "clamp(12px, 1.6vw, 15px)",
+                    color: "#1A1714",
+                  }}
+                >
+                  {t.name}
+                </span>
+                <span
+                  className="block"
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "clamp(9px, 1.2vw, 11px)",
+                    color: t.accent,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    fontWeight: 700,
+                    marginTop: 2,
+                  }}
+                >
+                  {t.role} · {t.company}
+                </span>
+              </div>
+
+              {/* Decorative accent corner */}
+              <div className="ml-auto self-end">
+                <svg
+                  width="clamp(18px, 3vw, 28px)"
+                  height="clamp(18px, 3vw, 28px)"
+                  viewBox="0 0 28 28"
+                  fill="none"
+                >
+                  <path
+                    d="M2 26 L26 2 M16 2 L26 2 L26 12"
+                    stroke={t.accent}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.5"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom scroll hint */}
+      <div
+        className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
+        style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: "10px",
+          letterSpacing: "0.2em",
+          color: "#9E9587",
+          textTransform: "uppercase",
+        }}
+      >
+        <span>Scroll</span>
+        <div
+          style={{
+            width: 1,
+            height: 32,
+            background: "linear-gradient(to bottom, #9E9587, transparent)",
+          }}
+        />
+      </div>
+    </section>
   );
 };
 
-export default Preloader;
+export default Testimonials;

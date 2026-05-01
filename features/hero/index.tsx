@@ -3,6 +3,7 @@ import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { SplitText } from "gsap/SplitText";
+import Link from "next/link";
 
 interface HeroProps {
   start: boolean;
@@ -333,8 +334,11 @@ const Hero = ({ start }: HeroProps) => {
 
             {/* Resume button */}
             <div className="md:col-span-7 lg:col-span-4 flex items-end justify-start md:justify-end">
-              <a
-                href="/resume.pdf"
+              <Link
+                href="/maduneche_samuel_CV.pdf"
+                download
+                target="_blank"
+                rel="noopener noreferrer"
                 data-cursor
                 className="resume-btn relative rounded-full flex items-center justify-center group overflow-hidden border border-black/10 bg-white/60 backdrop-blur-sm shrink-0"
                 style={{
@@ -363,7 +367,7 @@ const Hero = ({ start }: HeroProps) => {
                   <br />
                   Resume
                 </span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
