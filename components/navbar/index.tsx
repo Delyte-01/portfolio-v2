@@ -23,7 +23,7 @@ const navItems: NavItem[] = [
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  
+
   const container = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const linksRef = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -40,9 +40,9 @@ const Header = () => {
       gsap.set(menuRef.current, { yPercent: -100 });
       gsap.set(linksRef.current, { y: 100, opacity: 0, rotate: 5 });
 
-      tl.current = gsap.timeline({ 
+      tl.current = gsap.timeline({
         paused: true,
-        defaults: { ease: "expo.inOut", duration: 0.85 }
+        defaults: { ease: "expo.inOut", duration: 0.85 },
       });
 
       tl.current
@@ -78,7 +78,6 @@ const Header = () => {
     }
   }, [isMenuOpen]);
 
-
   useEffect(() => {
     const handleScroll = () => {
       // Find all sections marked as dark
@@ -111,14 +110,7 @@ const Header = () => {
       >
         <nav className="max-w-7xl  mx-auto px-6 h-20 flex items-center justify-between relative z-4000">
           {/* Logo */}
-          {/* <a
-            href="#home"
-            className={`text-3xl font-black tracking-tighter transition-colors duration-500 ${
-              isMenuOpen ? "text-white" : "text-[#111111]"
-            }`}
-          >
-            D<span className="text-primary">.</span>
-          </a> */}
+
           <GraffitiLogo />
 
           {/* Desktop Nav */}
@@ -128,7 +120,7 @@ const Header = () => {
                 key={item.key}
                 href={`#${item.key}`}
                 className={`text-[16px] uppercase font-bold text-foreground font-syne ${
-                  isDark  ? "text-white" : "text-foreground"
+                  isDark ? "text-white" : "text-foreground"
                 }`}
               >
                 {item.label}
@@ -140,24 +132,26 @@ const Header = () => {
           <button
             type="button"
             onClick={toggleMenu}
-            className="md:hidden w-12 h-12 flex flex-col justify-center items-center gap-1.5 relative z-5000 pointer-events-auto"
+            className={`md:hidden w-12 h-12 flex flex-col justify-center items-center gap-1.5 relative z-5000 pointer-events-auto`}
           >
             <span
-              className={`block w-7 h-0.5 transition-all duration-500 ${
+              className={`block w-7 h-0.5 transition-all duration-500  ${
+                isDark ? "bg-white" : "text-[#111111]"
+              } ${
                 isMenuOpen ? "rotate-45 translate-y-2 bg-white" : "bg-[#111111]"
               }`}
             />
             <span
               className={`block w-7 h-[2px] bg-[#111111] transition-all duration-300 ${
                 isMenuOpen ? "opacity-0" : "opacity-100"
-              }`}
+              }  ${isDark ? "bg-white" : "text-[#111111]"}`}
             />
             <span
               className={`block w-7 h-[2px] transition-all duration-500 ${
                 isMenuOpen
                   ? "-rotate-45 -translate-y-[8px] bg-white"
                   : "bg-[#111111]"
-              }`}
+              }  ${isDark ? "bg-white" : "text-[#111111]"}`}
             />
           </button>
         </nav>

@@ -3,19 +3,22 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 /* ─── Data ────────────────────────────────────────────────────────────────── */
 const testimonials = [
   {
     name: "Alex Rivera",
+    img: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777974729/Business_headshots_LinkedIn_Photos_corporate_portraits_Toronto_szdjtz.jpg",
     role: "CEO @ Nexus",
     company: "Nexus",
     rating: 5,
-    text: "David transformed our complex dashboard into a clean, architectural masterpiece. The attention to spatial composition and motion alone made it worth every penny. A true artist of the web.",
+    text: "Samuel transformed our complex dashboard into a clean, architectural masterpiece. The attention to spatial composition and motion alone made it worth every penny. A true artist of the web.",
   },
   {
     name: "Sarah Chen",
     role: "Design Lead",
+    img: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777974728/Foto_profissional_i3pezj.jpg",
     company: "Prismatic",
     rating: 5,
     text: "Working with Delyte Tech was a masterclass in frontend performance. The GSAP integration is buttery smooth — our users noticed the difference immediately.",
@@ -23,6 +26,7 @@ const testimonials = [
   {
     name: "James Knight",
     role: "Product Owner",
+    img: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777974728/During_our_consultation_Eric_told_me_he_prides_vyf8g6.jpg",
     company: "Meridian",
     rating: 5,
     text: "Exceptional motion design sense. He doesn't just build websites; he builds experiences that our customers keep coming back to explore.",
@@ -30,6 +34,7 @@ const testimonials = [
   {
     name: "Mila Osei",
     role: "Lead Developer",
+    img: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777974727/PHOTO_FOR_FLYER_jtbvvt.jpg",
     company: "Volta Labs",
     rating: 5,
     text: "Clean code and incredible attention to detail. The best frontend collaborator we've had. Shipped on time, zero regressions, beautiful output.",
@@ -39,6 +44,7 @@ const testimonials = [
     role: "Founder",
     company: "Stackline",
     rating: 5,
+    img: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777974921/Dewayne_Ashburn-28_uzhbkn.jpg",
     text: "Brought our brand's personality into every interaction. The hover states and micro-animations feel alive without ever being distracting.",
   },
 ];
@@ -52,17 +58,31 @@ const palette = [
   { bg: "#FFF7ED", fg: "#EA580C" },
 ];
 
-function Avatar({ name, index }: { name: string; index: number }) {
+function Avatar({
+  name,
+  index,
+  img,
+}: {
+  name: string;
+  index: number;
+  img: string;
+}) {
   const { bg, fg } = palette[index % palette.length];
   return (
     <div
       style={{ background: bg, color: fg }}
-      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0 select-none"
+      className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0 select-none overflow-hidden"
     >
-      {name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")}
+      <Image
+        src={img}
+        alt={name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")}
+        width={50}
+        height={50}
+        className="object-cover"
+      />
     </div>
   );
 }
@@ -100,7 +120,6 @@ const Testimonials = () => {
   const goToRef = useRef<
     ((newIndex: number, dir: "next" | "prev") => void) | null
   >(null);
-
 
   // Use a ref for current so startProgress/navigate always read the latest value
   const currentRef = useRef(0);
@@ -141,7 +160,7 @@ const Testimonials = () => {
         goToRef.current?.(newIndex, "next"); // call via ref
       },
     });
-  }, [total]); 
+  }, [total]);
 
   /* ── core navigation ───────────────────────────────────────────────────────── */
   const goTo = useCallback(
@@ -191,10 +210,9 @@ const Testimonials = () => {
   );
 
   // assign to ref so startProgress can use it
- useEffect(() => {
-   goToRef.current = goTo;
- }, [goTo]);
-
+  useEffect(() => {
+    goToRef.current = goTo;
+  }, [goTo]);
 
   /* ── public navigate (by direction) ─────────────────────────────────────── */
   const navigate = useCallback(
@@ -229,7 +247,6 @@ const Testimonials = () => {
         "-=0.35"
       );
   }, []);
-
 
   const t = testimonials[current];
 
@@ -468,7 +485,7 @@ const Testimonials = () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <Avatar name={t.name} index={current} />
+                <Avatar name={t.name} index={current} img={t.img} />
                 <div>
                   <p
                     style={{

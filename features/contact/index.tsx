@@ -9,6 +9,7 @@ import { LiaLinkedin } from "react-icons/lia";
 import { BsInstagram } from "react-icons/bs";
 import GraffitiLogo from "@/components/logo";
 
+
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -172,6 +173,15 @@ const ContactSection = () => {
   const footerRef = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
 
+
+
+   const phoneNumber = "2348139760048"; // Nigeria +234
+   const textMessage = encodeURIComponent(
+     "Hello, I'm interested in your work!"
+   );
+
+  
+  
   useMagnetic(btnRef as React.RefObject<HTMLElement | null>, 0.42);
 
   useGSAP(
@@ -519,8 +529,12 @@ const ContactSection = () => {
                   >
                     madunecheezechukwu@gmail.com
                   </HoverLink>
-                  <p>08139760048</p>
-                </div>
+                </div>{" "}
+                <HoverLink
+                  href={`https://wa.me/${phoneNumber}?text=${textMessage}`}
+                >
+                  Whatsapp
+                </HoverLink>
               </div>
 
               {/* magnetic CTA */}

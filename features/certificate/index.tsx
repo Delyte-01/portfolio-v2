@@ -3,75 +3,64 @@ import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import Image from "next/image";
+import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+interface certificatesProp {
+  title: string;
+  issuer: string;
+  date: string;
+  category: string;
+  accentColor: string;
+  accentLight: string;
+  image: string;
+  logo: string;
+  span: string;
+}
+
 /* ─── Data ──────────────────────────────────────────────────────────────── */
-const certificates = [
+const certificates: certificatesProp[] = [
   {
-    title: "Advanced Next.js Architecture",
-    issuer: "Vercel",
+    title: "Internship Program",
+    issuer: "Stanix",
     date: "March 2026",
     category: "Engineering",
     accentColor: "#000000",
     accentLight: "#f0f0f0",
     image:
       "https://res.cloudinary.com/dk5mfu099/image/upload/v1777618185/Maduneche_Samuel_-_Certificate_of_Internship_blyo2t.png",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=Vercel&backgroundColor=000000&textColor=ffffff&radius=8",
+    logo: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777973126/Screenshot_from_2026-05-05_10-22-46_f3fasg.png",
     span: "large", // 2×2
   },
   {
-    title: "AWS Cloud Practitioner",
-    issuer: "Amazon Web Services",
+    title: "Skill Test",
+    issuer: "Hacker Rank",
     date: "Nov 2025",
     category: "Cloud",
     accentColor: "#FF9900",
     accentLight: "#fff8ec",
     image:
       "https://res.cloudinary.com/dk5mfu099/image/upload/v1777618442/hackercert_rzditg.png",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=AWS&backgroundColor=FF9900&textColor=ffffff&radius=8",
+    logo: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777973110/Screenshot_from_2026-05-05_10-24-57_dqoi7z.png",
     span: "tall", // 1×2
   },
   {
-    title: "Meta Frontend Professional",
-    issuer: "Meta",
+    title: "Frontend Training",
+    issuer: "TECH 365",
     date: "Sep 2025",
     category: "Design Systems",
     accentColor: "#0082FB",
     accentLight: "#EFF6FF",
     image:
       "https://res.cloudinary.com/dk5mfu099/image/upload/v1777620664/WhatsApp_Image_2026-05-01_at_8.01.05_AM_oksehw.jpg",
-    logo: "https://api.dicebear.com/7.x/initials/svg?seed=Meta&backgroundColor=0082FB&textColor=ffffff&radius=8",
+    logo: "https://res.cloudinary.com/dk5mfu099/image/upload/v1777973126/Screenshot_from_2026-05-05_10-24-12_acqlnt.png",
     span: "wide",
   },
-  // {
-  //   title: "GSAP Animation Mastery",
-  //   issuer: "GreenSock",
-  //   date: "Jan 2026",
-  //   category: "Motion",
-  //   accentColor: "#88CE02",
-  //   accentLight: "#F5FFE0",
-  //   image:
-  //     "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80&auto=format&fit=crop",
-  //   logo: "https://api.dicebear.com/7.x/initials/svg?seed=GS&backgroundColor=88CE02&textColor=ffffff&radius=8",
-  //   span: "normal",
-  // },
-  // {
-  //   title: "UI/UX Design Specialization",
-  //   issuer: "Coursera × Google",
-  //   date: "Jul 2024",
-  //   category: "Design",
-  //   accentColor: "#4285F4",
-  //   accentLight: "#EFF6FF",
-  //   image:
-  //     "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80&auto=format&fit=crop",
-  //   logo: "https://api.dicebear.com/7.x/initials/svg?seed=UX&backgroundColor=4285F4&textColor=ffffff&radius=8",
-  //   span: "wide", 
-  // },
 ];
 
 /* ─── Magnetic Cursor Hook ───────────────────────────────────────────────── */
@@ -108,9 +97,11 @@ function useMagneticCursor(
 function CertCard({
   cert,
   index,
+  handlePreview,
 }: {
   cert: (typeof certificates)[0];
   index: number;
+  handlePreview: (certImage: string) => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLDivElement>(null);
@@ -178,7 +169,6 @@ function CertCard({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleMouseLeave}
-     
     >
       {/* ── Background image ── */}
       <div ref={imgRef} className="absolute inset-0 w-full h-full">
@@ -295,6 +285,7 @@ function CertCard({
 
           {/* Magnetic CTA button */}
           <button
+            onClick={() => handlePreview(cert.image)}
             ref={btnRef}
             className="btn-cta w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 relative overflow-hidden"
             style={{
@@ -322,6 +313,8 @@ const BentoCertificates = () => {
   const gridRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
+  const [open, setOpen] = useState<boolean>(false);
+  const [selectedCert, setSelectedCert] = useState<string>("");
 
   useGSAP(
     () => {
@@ -405,6 +398,11 @@ const BentoCertificates = () => {
       {ch}
     </span>
   ));
+
+  const handlePreview = (certImage: string) => {
+    setSelectedCert(certImage);
+    setOpen(true);
+  };
 
   return (
     <>
@@ -544,11 +542,16 @@ const BentoCertificates = () => {
           {/* ── Bento Grid ────────────────────────────────────────────── */}
           <div
             ref={gridRef}
-            className="grid grid-cols-1 md:grid-cols-3 gap-3"
+            className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-3"
             style={{ gridAutoRows: "240px" }}
           >
             {certificates.map((cert, i) => (
-              <CertCard key={i} cert={cert} index={i} />
+              <CertCard
+                key={i}
+                cert={cert}
+                index={i}
+                handlePreview={handlePreview}
+              />
             ))}
           </div>
 
@@ -571,6 +574,65 @@ const BentoCertificates = () => {
           </div>
         </div>
       </section>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[98vw] w-[120vw] max-h-[98vh] p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+          <div className="relative flex items-center justify-center w-full h-full">
+            <div className="relative w-full max-w-7xl mx-auto">
+              <DialogClose className="absolute -top-12 right-0 z-20 flex items-center gap-1.5 text-white/70 hover:text-white transition-all duration-200 group">
+                <span className="text-xs font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  Close
+                </span>
+                <div className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 hover:scale-110">
+                  <X size={16} />
+                </div>
+              </DialogClose>
+
+              {selectedCert && (
+                <div className="relative group">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 blur-2xl scale-105 pointer-events-none" />
+
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.8)]">
+                    <Image
+                      width={1600} // increased width
+                      height={1000} // increased height
+                      src={selectedCert}
+                      alt="Certificate"
+                      className="w-full h-full object-cover block object-center" // bigger height
+                      priority
+                    />
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 pointer-events-none" />
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-5 py-3.5 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-b-2xl">
+                    <span className="text-white/60 text-xs tracking-widest uppercase font-medium">
+                      Certificate
+                    </span>
+                    <a
+                      href={selectedCert}
+                      download
+                      className="flex items-center gap-2 text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-sm transition-all duration-200"
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -423,7 +423,7 @@ const About = () => {
                     className="stat-item group relative p-4 md:p-5 border border-white/[0.06] rounded-sm overflow-hidden cursor-default select-none transition-colors duration-300 hover:border-[var(--primary)]/25"
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-[var(--primary)]/[0.04] to-transparent" />
-                    <p className="font-syne text-[clamp(1.6rem,4vw,3rem)] font-black text-white mb-0.5 leading-none">
+                    <p className="font-syne text-[clamp(1.2rem,4vw,3rem)] font-black text-white mb-0.5 leading-none">
                       <Counter to={value} suffix={suffix} />
                     </p>
                     <p className="text-[9px] text-zinc-600 uppercase tracking-[0.28em] font-bold leading-tight">

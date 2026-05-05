@@ -23,6 +23,18 @@ interface Project {
 
 const PROJECTS: readonly Project[] = [
   {
+    id: "06",
+    title: ["LiteUpper", "App"],
+    category: "Smart• Exam • Prep",
+    image:
+      "https://res.cloudinary.com/dk5mfu099/image/upload/v1777973844/Screenshot_from_2026-05-05_10-37-06_dwluvy.png",
+    tech: ["React.js", "Mui Styling", "Framer motion"],
+    description:
+      "LiteUpper powers digital assessments for institutions and helps students ace JAMB, WAEC, NECO and more — with curated past questions and smart analytics.",
+    github: "https://github.com/UC-BLACK1/LiteUpNigeriaFrontEndWeb",
+    live: "https://liteupper.com/",
+  },
+  {
     id: "01",
     title: ["NeoAI", "App"],
     category: "AI • Interface",
@@ -184,7 +196,7 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]
-                         lg:grayscale-[60%] group-hover:grayscale-0 group-hover:scale-[1.04]"
+                         lg:grayscale-[10%] group-hover:grayscale-0 group-hover:scale-[1.04]"
               priority={index === 0}
             />
 

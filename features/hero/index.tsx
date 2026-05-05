@@ -74,7 +74,7 @@ const CustomCursor = () => {
     <>
       <div
         ref={dotRef}
-        className="pointer-events-none fixed top-0 left-0 z-[9999] w-2 h-2 rounded-full bg-[var(--primary)]"
+        className="pointer-events-none hidden md:block fixed top-0 left-0 z-[9999] w-2 h-2 rounded-full bg-[var(--primary)]"
         style={{ willChange: "transform" }}
       />
       <div
