@@ -23,19 +23,19 @@ interface Project {
 
 const PROJECTS: readonly Project[] = [
   {
-    id: "06",
-    title: ["LiteUpper", "App"],
+    id: "01",
+    title: ["Delyte Academy",""],
     category: "Smart• Exam • Prep",
     image:
-      "https://res.cloudinary.com/dk5mfu099/image/upload/v1777973844/Screenshot_from_2026-05-05_10-37-06_dwluvy.png",
-    tech: ["React.js", "Mui Styling", "Framer motion"],
+      "https://res.cloudinary.com/dk5mfu099/image/upload/v1786827705/Screenshot_from_2026-08-15_21-59-26_ditpbw.png",
+    tech: ["Next.js", "Supabase", "Gsap"],
     description:
-      "LiteUpper powers digital assessments for institutions and helps students ace JAMB, WAEC, NECO and more — with curated past questions and smart analytics.",
-    github: "https://github.com/UC-BLACK1/LiteUpNigeriaFrontEndWeb",
-    live: "https://liteupper.com/",
+      "Delyte Academy is a modern online learning and Computer-Based Testing (CBT) platform designed to help students access courses, study materials, practice questions, and assessments in one place.",
+    github: "https://github.com/Delyte-01/Delyte-academy",
+    live: "https://delyte-academy.vercel.app/",
   },
   {
-    id: "01",
+    id: "02",
     title: ["NeoAI", "App"],
     category: "AI • Interface",
     image:
@@ -47,7 +47,7 @@ const PROJECTS: readonly Project[] = [
     live: "https://neo-ai-app.vercel.app/",
   },
   {
-    id: "02",
+    id: "03",
     title: ["Playo", "Gamifi-App"],
     category: "Blockchain • Web3",
     image:
@@ -59,7 +59,7 @@ const PROJECTS: readonly Project[] = [
     live: "https://gamifi-net.netlify.app/",
   },
   {
-    id: "03",
+    id: "04",
     title: ["CineMax", "Movie App"],
     category: "SaaS • Education",
     image:
@@ -71,7 +71,7 @@ const PROJECTS: readonly Project[] = [
     live: "https://cinemax-site.vercel.app/",
   },
   {
-    id: "04",
+    id: "05",
     title: ["BOE ASSOCIATES", "LIMITED"],
     category: "Finance",
     image:
@@ -441,7 +441,7 @@ const Projects = () => {
             </h2>
           </div>
           <div className="overflow-hidden">
-            <h2 className="reveal-word font-syne text-[clamp(2.5rem,5.5vw,6.5rem)] font-black uppercase leading-[0.86] tracking-[-0.03em] text-zinc-800">
+            <h2 className="reveal-word font-syne text-[clamp(2.5rem,4vw,6.5rem)] font-black uppercase leading-[0.86] tracking-[-0.03em] text-zinc-800">
               Archive
             </h2>
           </div>
